@@ -88,6 +88,16 @@ impl Program {
         }
     }
 
+    pub fn set_uniform_glm_m4(&self, name: String, matrix: &nalgebra_glm::Mat4) {
+        
+        let loc = self.get_uniform_location(name);
+        unsafe {
+            gl::UniformMatrix4fv(loc, 1, 0_u8, matrix.as_ptr());
+        }
+    }
+    
+    
+
     pub fn set_bool(&self, name: String, value: bool) {
         unsafe {
             let location = self.get_uniform_location(name);
