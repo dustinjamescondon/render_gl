@@ -79,6 +79,7 @@ where
         }
     }
 
+    /// TODO not sure this is working correctly
     #[allow(dead_code)]
     pub fn update_data<T>(&self, data:&[T]) {
         self.bind();
