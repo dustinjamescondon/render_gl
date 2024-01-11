@@ -1,4 +1,5 @@
 mod shader;
+pub mod text;
 pub mod buffer;
 pub mod framebuffer;
 pub mod texture;

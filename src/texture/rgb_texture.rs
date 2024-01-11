@@ -25,6 +25,7 @@ where
 
 pub type RGBTexture = Texture<TextureTypeRGB>;
 pub type U32Texture = Texture<TextureTypeI32>;
+pub type REDTexture = Texture<TextureTypeRed>;
 
 pub struct TextureTypeRGB;
 impl TextureType for TextureTypeRGB {
@@ -38,6 +39,13 @@ impl TextureType for TextureTypeI32 {
 	const INTERNAL_FORMAT: gl::types::GLuint = gl::R32I;
 	const TEXTURE_TYPE: gl::types::GLuint = gl::RED_INTEGER;
 	const DATA_TYPE: gl::types::GLenum = gl::INT;
+}
+
+pub struct TextureTypeRed;
+impl TextureType for TextureTypeRed {
+	const INTERNAL_FORMAT: gl::types::GLuint = gl::RED;
+	const TEXTURE_TYPE: gl::types::GLuint = gl::RED;
+	const DATA_TYPE: gl::types::GLenum = gl::UNSIGNED_BYTE;
 }
 
 pub struct TextureTypeF32;
