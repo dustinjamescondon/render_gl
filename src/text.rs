@@ -59,13 +59,3 @@ pub fn init_font(font: &str) -> Result<FontContext, freetype::Error> {
         map,
     })
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    #[test]
-    fn test() {
-        let result = init_font("no_file.ttf");
-        let i = 0;
-    }
-}
