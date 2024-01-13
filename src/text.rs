@@ -1,11 +1,12 @@
-extern crate freetype;
-use std::{collections::HashMap, ffi::c_void};
+extern crate rusttype;
 use nalgebra::Vector2;
+use std::{
+    collections::HashMap,
+    ffi::{c_void, CString},
+};
 type Vector2i = Vector2<i32>;
-
-use freetype::{face::LoadFlag, Face};
-
-use crate::{REDTexture, Texture};
+use crate::{gl_panic, glchk, REDTexture, Texture};
+use freetype as ft;
 
 pub struct Character {
     pub texture: REDTexture,
@@ -18,21 +19,21 @@ pub struct FontContext {
     pub map: HashMap<char, Character>,
 }
 
-pub fn init_font(font: &str) -> Result<FontContext, freetype::Error> {
-    let ft = freetype::Library::init().expect("Couldn't init freetype");
-
-    unsafe {
-        gl::PixelStorei(gl::UNPACK_ALIGNMENT, 1);
-    }
-
-    let face = ft.new_face(font, 0)?;
+pub fn init_font(font: &str, char_width: isize) -> Result<FontContext, ()> {
+    let font_path = std::env::current_dir().unwrap().join(font);
+    let data = std::fs::read(&font_path).unwrap();
+    let lib = ft::Library::init().unwrap();
+    let face = lib.new_face(font, 0).unwrap();
+    face.set_char_size(char_width, 0, 50, 0).unwrap();
 
     let mut map = HashMap::<char, Character>::new();
     for i in 0_u8..128_u8 {
-        face.load_char(i as usize, LoadFlag::RENDER).unwrap();
+
+        face.load_char(i as usize, ft::face::LoadFlag::RENDER).unwrap();
         let glyph = face.glyph();
+
         let texture = REDTexture::new_from_data(
-            glyph.bitmap().buffer().as_ptr() as *mut gl::types::GLvoid,
+            glyph.bitmap().raw().buffer as *mut gl::types::GLvoid,
             glyph.bitmap().width() as usize,
             glyph.bitmap().rows() as usize,
         );
@@ -44,8 +45,10 @@ pub fn init_font(font: &str) -> Result<FontContext, freetype::Error> {
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         }
-        texture.unbind();
 
+        gl_panic!();
+
+        texture.unbind();
         let character = Character {
             texture,
             size: Vector2i::new(glyph.bitmap().width(), glyph.bitmap().rows()),
@@ -55,7 +58,24 @@ pub fn init_font(font: &str) -> Result<FontContext, freetype::Error> {
         map.insert(i as char, character);
     }
 
-    Ok(FontContext {
-        map,
-    })
+    Ok(FontContext { map })
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use freetype as ft;
+
+    /// Just makes sure I'm getting a bitmap out of it
+    #[test]
+    fn freetype_rs() {
+        let lib = ft::Library::init().unwrap();
+        let face = lib.new_face("res/FreeSansBold.ttf", 0).unwrap();
+        face.set_char_size(40 * 64, 0, 50, 0).unwrap();
+        face.load_char('f' as usize, ft::face::LoadFlag::RENDER)
+            .unwrap();
+        let glyph = face.glyph();
+        assert!(glyph.bitmap().width() > 0);
+        assert!(glyph.bitmap().rows() > 0);
+    }
 }

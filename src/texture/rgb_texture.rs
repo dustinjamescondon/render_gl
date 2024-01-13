@@ -71,7 +71,7 @@ where T: TextureType {
 	/// without any data attached to it. This texture can be bound to 
 	/// a framebuffer and be written to by a shader
 	pub fn new(width: i32, height: i32) -> Self {
-		let target = gl::TEXTURE_RECTANGLE;
+		let target = gl::TEXTURE_2D;
 		
 		let id = create_and_set_gl_parameters();
 		unsafe {
@@ -103,7 +103,7 @@ where T: TextureType {
 	/// that is, maybe we can make specific functions for passing in color data or u32 data
 	/// instead of void*
 	pub fn new_from_data(data: *const std::ffi::c_void, width: usize, height: usize) -> Self {
-		let target = gl::TEXTURE_RECTANGLE;
+		let target = gl::TEXTURE_2D;
 		
 		let id = create_and_set_gl_parameters();
 		unsafe {
@@ -130,13 +130,13 @@ where T: TextureType {
 	
 	pub fn bind(&self) {
 		unsafe {
-			gl::BindTexture(gl::TEXTURE_RECTANGLE, self.id);
+			gl::BindTexture(gl::TEXTURE_2D, self.id);
 		}
 	}
 
 	pub fn unbind(&self) {
 		unsafe {
-			gl::BindTexture(gl::TEXTURE_RECTANGLE, 0);
+			gl::BindTexture(gl::TEXTURE_2D, 0);
 		}
 	}
 
@@ -203,15 +203,15 @@ where T: TextureType {
 	pub fn attach_to_unit(&mut self, tex_unit: gl::types::GLuint) {
 		unsafe {
 			gl::ActiveTexture(gl::TEXTURE0 + tex_unit);
-			gl::BindTexture(gl::TEXTURE_RECTANGLE, self.id);
+			gl::BindTexture(gl::TEXTURE_2D, self.id);
 		}
-		self.attach_point = gl::TEXTURE_RECTANGLE + tex_unit;
+		self.attach_point = gl::TEXTURE_2D + tex_unit;
 	}
 }
 
 fn create_and_set_gl_parameters() -> gl::types::GLuint  {
 	let mut id: gl::types::GLuint = 0;
-	let target = gl::TEXTURE_RECTANGLE;
+	let target = gl::TEXTURE_2D;
 	
 	unsafe {
 		gl::GenTextures(1, &mut id);
