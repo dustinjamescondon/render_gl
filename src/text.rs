@@ -19,12 +19,14 @@ pub struct FontContext {
     pub map: HashMap<char, Character>,
 }
 
-pub fn init_font(font: &str, char_width: isize) -> Result<FontContext, ()> {
-    let font_path = std::env::current_dir().unwrap().join(font);
-    let data = std::fs::read(&font_path).unwrap();
+pub fn init_font(font: &str, char_width: isize, horizontal_res: u32) -> Result<FontContext, ()> {
     let lib = ft::Library::init().unwrap();
     let face = lib.new_face(font, 0).unwrap();
-    face.set_char_size(char_width, 0, 50, 0).unwrap();
+    face.set_char_size(char_width, 0, horizontal_res, 0).unwrap();
+
+    unsafe {
+        gl::PixelStorei(gl::UNPACK_ALIGNMENT, 1);
+    }
 
     let mut map = HashMap::<char, Character>::new();
     for i in 0_u8..128_u8 {
@@ -48,7 +50,6 @@ pub fn init_font(font: &str, char_width: isize) -> Result<FontContext, ()> {
 
         gl_panic!();
 
-        texture.unbind();
         let character = Character {
             texture,
             size: Vector2i::new(glyph.bitmap().width(), glyph.bitmap().rows()),
