@@ -17,12 +17,13 @@ pub struct Character {
 
 pub struct FontContext {
     pub map: HashMap<char, Character>,
+    pub pixel_height: u32,
 }
 
-pub fn init_font(font: &str, char_width: isize, horizontal_res: u32) -> Result<FontContext, ()> {
+pub fn init_font(font: &str, pixel_height: u32) -> Result<FontContext, ()> {
     let lib = ft::Library::init().unwrap();
     let face = lib.new_face(font, 0).unwrap();
-    face.set_char_size(char_width, 0, horizontal_res, 0).unwrap();
+    face.set_pixel_sizes(0, pixel_height).unwrap();
 
     unsafe {
         gl::PixelStorei(gl::UNPACK_ALIGNMENT, 1);
@@ -59,7 +60,7 @@ pub fn init_font(font: &str, char_width: isize, horizontal_res: u32) -> Result<F
         map.insert(i as char, character);
     }
 
-    Ok(FontContext { map })
+    Ok(FontContext { map, pixel_height })
 }
 
 #[cfg(test)]

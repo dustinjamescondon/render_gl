@@ -9,7 +9,7 @@ fn get_output_path() -> PathBuf {
     return PathBuf::from(path);
 }
 
-// and then inside my build.rs main() method:
+/// This is just for testing the font loading
 fn main() {
 // ...
     let out_dir = env::var("OUT_DIR").unwrap();
