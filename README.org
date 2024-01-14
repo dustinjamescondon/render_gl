@@ -1,4 +1,0 @@
-* Outstanding
-** Text rendering
-Need to be able to update VBO. Not sure this is working right now. Test!
-
