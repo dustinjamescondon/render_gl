@@ -5,31 +5,32 @@ use std::os::raw::c_void;
 
 // Refer https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
 // and https://moderngl.readthedocs.io/en/latest/topics/texture_formats.html
-pub trait TextureType {
+pub trait TextureType<TData> {
     const INTERNAL_FORMAT: gl::types::GLuint;
     const TEXTURE_TYPE: gl::types::GLuint;
     const DATA_TYPE: gl::types::GLenum;
     const TARGET: gl::types::GLenum;
 }
 
-pub struct Texture<T>
+pub struct Texture<TTex,TData>
 where
-    T: TextureType,
+    TTex: TextureType<TData>,
+	TData: Default + Clone
 {
     pub id: gl::types::GLuint,
     pub width: gl::types::GLint,
     pub height: gl::types::GLint,
     pub target: gl::types::GLuint,
     pub attach_point: gl::types::GLenum,
-    _hack: std::marker::PhantomData<T>,
+    _hack: std::marker::PhantomData<(TTex,TData)>,
 }
 
-pub type RGBTexture = Texture<TextureTypeRGB>;
-pub type U32Texture = Texture<TextureTypeI32>;
-pub type REDTexture = Texture<TextureTypeRed>;
+pub type RGBTexture = Texture<TextureTypeRGB, [f32;3]>;
+pub type I32Texture = Texture<TextureTypeI32, i32>;
+pub type REDTexture = Texture<TextureTypeRed, f32>;
 
 pub struct TextureTypeRGB;
-impl TextureType for TextureTypeRGB {
+impl TextureType<[f32;3]> for TextureTypeRGB {
     const INTERNAL_FORMAT: gl::types::GLuint = gl::RGB4;
     const TEXTURE_TYPE: gl::types::GLuint = gl::RGB;
     const DATA_TYPE: gl::types::GLenum = gl::FLOAT;
@@ -37,7 +38,7 @@ impl TextureType for TextureTypeRGB {
 }
 
 pub struct TextureTypeI32;
-impl TextureType for TextureTypeI32 {
+impl TextureType<i32> for TextureTypeI32 {
     const INTERNAL_FORMAT: gl::types::GLuint = gl::R32I;
     const TEXTURE_TYPE: gl::types::GLuint = gl::RED_INTEGER;
     const DATA_TYPE: gl::types::GLenum = gl::INT;
@@ -45,7 +46,7 @@ impl TextureType for TextureTypeI32 {
 }
 
 pub struct TextureTypeRed;
-impl TextureType for TextureTypeRed {
+impl TextureType<f32> for TextureTypeRed {
     const INTERNAL_FORMAT: gl::types::GLuint = gl::RED;
     const TEXTURE_TYPE: gl::types::GLuint = gl::RED;
     const DATA_TYPE: gl::types::GLenum = gl::UNSIGNED_BYTE;
@@ -53,7 +54,7 @@ impl TextureType for TextureTypeRed {
 }
 
 pub struct TextureTypeF32;
-impl TextureType for TextureTypeF32 {
+impl TextureType<f32> for TextureTypeF32 {
     const INTERNAL_FORMAT: gl::types::GLuint = gl::R32F;
     const TEXTURE_TYPE: gl::types::GLuint = gl::RED;
     const DATA_TYPE: gl::types::GLenum = gl::FLOAT;
@@ -71,9 +72,10 @@ impl Clone for RGBTexture {
 }
 
 #[allow(dead_code)]
-impl<T> Texture<T>
+impl<TTex,TData> Texture<TTex,TData>
 where
-    T: TextureType,
+    TTex: TextureType<TData>,
+	TData: Default + Clone
 {
     /// This allocates a texture on the video card of the given size
     /// without any data attached to it. This texture can be bound to
@@ -82,14 +84,14 @@ where
         let id = Self::create_and_set_gl_parameters();
         unsafe {
             gl::TexImage2D(
-                T::TARGET,
+                TTex::TARGET,
                 0,
-                T::INTERNAL_FORMAT as i32,
+                TTex::INTERNAL_FORMAT as i32,
                 width,
                 height,
                 0,
-                T::TEXTURE_TYPE,
-                T::DATA_TYPE,
+                TTex::TEXTURE_TYPE,
+                TTex::DATA_TYPE,
                 std::ptr::null(),
             );
         }
@@ -98,7 +100,7 @@ where
             id,
             width,
             height,
-            target: T::TARGET,
+            target: TTex::TARGET,
             attach_point: 0,
             _hack: std::marker::PhantomData,
         }
@@ -111,19 +113,19 @@ where
     /// that is, maybe we can make specific functions for passing in color data or u32 data
     /// instead of void*
     pub fn new_from_data(data: *const std::ffi::c_void, width: usize, height: usize) -> Self {
-        let target = T::TARGET;
+        let target = TTex::TARGET;
 
         let id = Self::create_and_set_gl_parameters();
         unsafe {
             gl::TexImage2D(
                 target,
                 0,
-                T::INTERNAL_FORMAT as i32,
+                TTex::INTERNAL_FORMAT as i32,
                 width as i32,
                 height as i32,
                 0,
-                T::TEXTURE_TYPE,
-                T::DATA_TYPE,
+                TTex::TEXTURE_TYPE,
+                TTex::DATA_TYPE,
                 data as *const c_void,
             );
         }
@@ -140,65 +142,31 @@ where
 
     pub fn bind(&self) {
         unsafe {
-            gl::BindTexture(T::TARGET, self.id);
+            gl::BindTexture(TTex::TARGET, self.id);
         }
     }
 
     pub fn unbind(&self) {
         unsafe {
-            gl::BindTexture(T::TARGET, 0);
+            gl::BindTexture(TTex::TARGET, 0);
         }
     }
 
-    pub fn get_int_pixel_data(&self) -> Vec<i32> {
+    pub fn get_pixel_data(&self) -> Vec<TData> {
         self.bind();
-        let mut data = vec![0i32; (self.width * self.height) as usize];
+        let mut data = vec![TData::default(); (self.width * self.height) as usize];
         unsafe {
             glchk!(
-                gl::GetTexImage(T::TARGET,
+                gl::GetTexImage(TTex::TARGET,
                     0,
-                    T::TEXTURE_TYPE,
-                    T::DATA_TYPE,
+                    TTex::TEXTURE_TYPE,
+                    TTex::DATA_TYPE,
                     data.as_mut_ptr() as *mut gl::types::GLvoid,
                 );
             );
         }
 
         data
-    }
-
-    pub fn get_pixel_data(&self) -> Vec<f32> {
-        self.bind();
-        let mut data = vec![0.0f32; (self.width * self.height * 3) as usize];
-        unsafe {
-            glchk!(
-			gl::GetTexImage(T::TARGET,
-				0,
-				T::TEXTURE_TYPE,
-				T::DATA_TYPE,
-				data.as_mut_ptr() as *mut gl::types::GLvoid,
-			););
-        }
-
-        data
-    }
-
-    pub fn get_pixel_rgb_data(&self) -> Vec<Color> {
-        self.bind();
-        let mut data = vec![0.0f32; (self.width * self.height * 3) as usize];
-        unsafe {
-            glchk!(
-			gl::GetTexImage(T::TARGET,
-				0,
-				T::TEXTURE_TYPE,
-				T::DATA_TYPE,
-				data.as_mut_ptr() as *mut gl::types::GLvoid,
-			););
-        }
-
-        data.chunks(3)
-            .map(|arr| normalized_to_u8_color(arr[0], arr[1], arr[2]))
-            .collect()
     }
 
     pub fn attach_to_fbo(&mut self, attach_point: gl::types::GLenum) {
@@ -211,17 +179,17 @@ where
     pub fn attach_to_unit(&mut self, tex_unit: gl::types::GLuint) {
         unsafe {
             gl::ActiveTexture(gl::TEXTURE0 + tex_unit);
-            gl::BindTexture(T::TARGET, self.id);
+            gl::BindTexture(TTex::TARGET, self.id);
         }
 		// TODO shouldn't this be TEXTURE0?
-        self.attach_point = T::TARGET + tex_unit;
+        self.attach_point = TTex::TARGET + tex_unit;
     }
 
 	/// TODO impl some mech for this to be cusomized per texture, because
 	/// for instance a character texture needs specific settings
 	fn create_and_set_gl_parameters() -> gl::types::GLuint {
 		let mut id: gl::types::GLuint = 0;
-		let target = T::TARGET;
+		let target = TTex::TARGET;
 	
 		unsafe {
 			gl::GenTextures(1, &mut id);
@@ -240,9 +208,10 @@ fn normalized_to_u8_color(r: f32, g: f32, b: f32) -> Color {
     Color::RGB((r * max_u8) as u8, (g * max_u8) as u8, (b * max_u8) as u8)
 }
 
-impl<T> Drop for Texture<T>
+impl<TTex,TData> Drop for Texture<TTex,TData>
 where
-    T: TextureType,
+    TTex: TextureType<TData>,
+	TData: Default + Clone
 {
     fn drop(&mut self) {
         unsafe {
