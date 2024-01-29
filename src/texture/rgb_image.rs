@@ -22,6 +22,10 @@ impl RGBImage
 }
 
 impl RGBImage {
+
+    pub fn rows(&self) -> impl DoubleEndedIterator<Item = &[Color]> {
+        self.data.chunks(self.width)
+    }
     /// TODO Need to get rid of arbitrary methods like this and 
     /// do some explicit transformation steps
     pub fn to_rgb_image_flipped_y(&self) -> RgbImage {
