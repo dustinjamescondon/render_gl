@@ -1,8 +1,9 @@
-use std::ffi::{CStr, CString};
-use nalgebra::{Matrix4};
+use nalgebra::Matrix4;
+use std::{cell::RefCell, collections::HashMap, ffi::{CStr, CString}};
 
 pub struct Program {
     id: gl::types::GLuint,
+    uniform_map: RefCell<std::collections::HashMap<String, i32>>,
 }
 
 #[allow(dead_code)]
@@ -50,8 +51,11 @@ impl Program {
                 gl::DetachShader(program_id, shader.id());
             }
         }
-        
-        Ok(Program { id: program_id })
+
+        Ok(Program {
+            id: program_id,
+            uniform_map: RefCell::new(HashMap::<String, i32>::new()),
+        })
     }
     
     pub fn from_src(vert_src: &str, frag_src: &str) -> Result<Program, String> {
@@ -72,11 +76,18 @@ impl Program {
             gl::UseProgram(self.id);
         }
     }
-    
+
     pub fn get_uniform_location(&self, name: String) -> i32 {
-        unsafe {
-            let c_str = CString::new(name).unwrap();
-            gl::GetUniformLocation(self.id, c_str.as_ptr())
+        let mut map = self.uniform_map.borrow_mut();
+        if let Some(index) =  map.get(&name) {
+            *index
+        } else {
+            unsafe {
+                let c_str = CString::new(name.clone()).unwrap();
+                let index = gl::GetUniformLocation(self.id, c_str.as_ptr());
+                map.insert(name, index);
+                index
+            }
         }
     }
     
@@ -95,8 +106,6 @@ impl Program {
             gl::UniformMatrix4fv(loc, 1, 0_u8, matrix.as_ptr());
         }
     }
-    
-    
 
     pub fn set_bool(&self, name: String, value: bool) {
         unsafe {
@@ -132,7 +141,6 @@ impl Program {
             gl::Uniform1d(location, value);
         }
     }
-
 }
 
 impl Drop for Program {
