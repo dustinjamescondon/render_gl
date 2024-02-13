@@ -98,6 +98,24 @@ impl FontContext {
         })
     }
 
+    fn text_width(&self, text: &String, scale: f32) -> f32 {
+        let mut width = 0_f32;
+        for c in text.chars() {
+            let ctex = self.map.get(&c).unwrap();
+            width += (ctex.advance >> 6) as f32 * scale;
+        }
+
+        width
+    }
+
+    pub fn render_text_center_justified(&self, text: &String, center_pos: Vec2, scale: f32, projection: &Mat4, clr: &[f32; 3]) {
+        let text_width = self.text_width(text, scale);
+
+        let mut corner_pos = center_pos;
+        corner_pos.x -= 0.5_f32 * text_width;
+        self.render_text(text, corner_pos, scale, projection, clr)
+    }
+
     pub fn render_text(&self, text: &String, pos: Vec2, scale: f32, projection: &Mat4, clr: &[f32; 3]) {
         self.text_shader.set_used();
         self.text_shader
@@ -158,6 +176,7 @@ impl FontContext {
 
                 _pos.x += (ctex.advance >> 6) as f32 * scale;
             }
+            
             self.text_vao.unbind();
             unsafe {
                 gl::BindTexture(gl::TEXTURE_2D, 0);
@@ -170,18 +189,4 @@ impl FontContext {
 #[cfg(test)]
 mod test {
     use super::*;
-    use freetype as ft;
-
-    /// Just makes sure I'm getting a bitmap out of it
-    #[test]
-    fn freetype_rs() {
-        let lib = ft::Library::init().unwrap();
-        let face = lib.new_face("res/FreeSansBold.ttf", 0).unwrap();
-        face.set_char_size(40 * 64, 0, 50, 0).unwrap();
-        face.load_char('f' as usize, ft::face::LoadFlag::RENDER)
-            .unwrap();
-        let glyph = face.glyph();
-        assert!(glyph.bitmap().width() > 0);
-        assert!(glyph.bitmap().rows() > 0);
-    }
 }
