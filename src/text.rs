@@ -1,12 +1,9 @@
 extern crate rusttype;
 use nalgebra::Vector2;
-use nalgebra_glm::{Vec2, Vec4, Mat4};
-use std::{
-    collections::HashMap,
-    ffi::{c_void, CString},
-};
+use nalgebra_glm::{Vec2, Mat4};
+use std::collections::HashMap;
 type Vector2i = Vector2<i32>;
-use crate::{gl_panic, glchk, ArrayBuffer, Program, REDTexture, Shader, Texture, VertexArray};
+use crate::{gl_panic, ArrayBuffer, Program, REDTexture, VertexArray};
 use freetype as ft;
 
 pub struct FontContext {
