@@ -10,6 +10,10 @@ pub trait TextureType<TData> {
     const TEXTURE_TYPE: gl::types::GLuint;
     const DATA_TYPE: gl::types::GLenum;
     const TARGET: gl::types::GLenum;
+    const TEXTURE_WRAP_S: gl::types::GLenum;
+    const TEXTURE_WRAP_T: gl::types::GLenum;
+    const TEXTURE_MIN_FILTER: gl::types::GLenum;
+    const TEXTURE_MAG_FILTER: gl::types::GLenum;
 }
 
 pub struct Texture<TTex,TData>
@@ -26,6 +30,7 @@ where
 }
 
 pub type RGBTexture = Texture<TextureTypeRGB, [f32;3]>;
+pub type U8RGBTexture = Texture<TextureTypeU8RGB, [u8;3]>;
 pub type F32Texture = Texture<TextureTypeRGB, f32>;
 pub type I32Texture = Texture<TextureTypeI32, i32>;
 pub type REDTexture = Texture<TextureTypeRed, u8>;
@@ -35,7 +40,23 @@ impl TextureType<[f32;3]> for TextureTypeRGB {
     const INTERNAL_FORMAT: gl::types::GLuint = gl::RGB4;
     const TEXTURE_TYPE: gl::types::GLuint = gl::RGB;
     const DATA_TYPE: gl::types::GLenum = gl::FLOAT;
-    const TARGET: gl::types::GLenum = gl::TEXTURE_RECTANGLE;
+    const TARGET: gl::types::GLenum = gl::TEXTURE_2D;
+    const TEXTURE_WRAP_S: gl::types::GLenum = gl::CLAMP_TO_EDGE;
+    const TEXTURE_WRAP_T: gl::types::GLenum = gl::CLAMP_TO_EDGE;
+    const TEXTURE_MIN_FILTER: gl::types::GLenum = gl::LINEAR;
+    const TEXTURE_MAG_FILTER: gl::types::GLenum = gl::LINEAR;
+}
+
+pub struct TextureTypeU8RGB;
+impl TextureType<[u8;3]> for TextureTypeU8RGB {
+    const INTERNAL_FORMAT: gl::types::GLuint = gl::RGB;
+    const TEXTURE_TYPE: gl::types::GLuint = gl::RGB;
+    const DATA_TYPE: gl::types::GLenum = gl::UNSIGNED_BYTE;
+    const TARGET: gl::types::GLenum = gl::TEXTURE_2D;
+    const TEXTURE_WRAP_S: gl::types::GLenum = gl::REPEAT;
+    const TEXTURE_WRAP_T: gl::types::GLenum = gl::REPEAT;
+    const TEXTURE_MIN_FILTER: gl::types::GLenum = gl::LINEAR_MIPMAP_LINEAR;
+    const TEXTURE_MAG_FILTER: gl::types::GLenum = gl::LINEAR;
 }
 
 pub struct TextureTypeI32;
@@ -44,6 +65,10 @@ impl TextureType<i32> for TextureTypeI32 {
     const TEXTURE_TYPE: gl::types::GLuint = gl::RED_INTEGER;
     const DATA_TYPE: gl::types::GLenum = gl::INT;
     const TARGET: gl::types::GLenum = gl::TEXTURE_RECTANGLE;
+    const TEXTURE_WRAP_S: gl::types::GLenum = gl::CLAMP_TO_EDGE;
+    const TEXTURE_WRAP_T: gl::types::GLenum = gl::CLAMP_TO_EDGE;
+    const TEXTURE_MIN_FILTER: gl::types::GLenum = gl::LINEAR;
+    const TEXTURE_MAG_FILTER: gl::types::GLenum = gl::LINEAR;
 }
 
 pub struct TextureTypeRed;
@@ -52,6 +77,10 @@ impl TextureType<u8> for TextureTypeRed {
     const TEXTURE_TYPE: gl::types::GLuint = gl::RED;
     const DATA_TYPE: gl::types::GLenum = gl::UNSIGNED_BYTE;
     const TARGET: gl::types::GLenum = gl::TEXTURE_2D;
+    const TEXTURE_WRAP_S: gl::types::GLenum = gl::CLAMP_TO_EDGE;
+    const TEXTURE_WRAP_T: gl::types::GLenum = gl::CLAMP_TO_EDGE;
+    const TEXTURE_MIN_FILTER: gl::types::GLenum = gl::LINEAR;
+    const TEXTURE_MAG_FILTER: gl::types::GLenum = gl::LINEAR;
 }
 
 pub struct TextureTypeF32;
@@ -60,6 +89,10 @@ impl TextureType<f32> for TextureTypeF32 {
     const TEXTURE_TYPE: gl::types::GLuint = gl::RED;
     const DATA_TYPE: gl::types::GLenum = gl::FLOAT;
     const TARGET: gl::types::GLenum = gl::TEXTURE_2D;
+    const TEXTURE_WRAP_S: gl::types::GLenum = gl::CLAMP_TO_EDGE;
+    const TEXTURE_WRAP_T: gl::types::GLenum = gl::CLAMP_TO_EDGE;
+    const TEXTURE_MIN_FILTER: gl::types::GLenum = gl::LINEAR;
+    const TEXTURE_MAG_FILTER: gl::types::GLenum = gl::LINEAR;
 }
 
 impl Clone for RGBTexture {
@@ -129,6 +162,8 @@ where
                 TTex::DATA_TYPE,
                 data as *const c_void,
             );
+
+            gl::GenerateMipmap(gl::TEXTURE_2D);
         }
 
         Texture {
@@ -182,26 +217,25 @@ where
             gl::ActiveTexture(gl::TEXTURE0 + tex_unit);
             gl::BindTexture(TTex::TARGET, self.id);
         }
-		// TODO shouldn't this be TEXTURE0?
-        self.attach_point = TTex::TARGET + tex_unit;
+        self.attach_point = gl::TEXTURE0 + tex_unit;
     }
 
-	/// TODO impl some mech for this to be cusomized per texture, because
-	/// for instance a character texture needs specific settings
-	fn create_and_set_gl_parameters() -> gl::types::GLuint {
-		let mut id: gl::types::GLuint = 0;
-		let target = TTex::TARGET;
+    /// TODO impl some mech for this to be cusomized per texture, because
+    /// for instance a character texture needs specific settings
+    fn create_and_set_gl_parameters() -> gl::types::GLuint {
+	let mut id: gl::types::GLuint = 0;
+	let target = TTex::TARGET;
 	
-		unsafe {
-			gl::GenTextures(1, &mut id);
-			gl::BindTexture(target, id);
-			gl::TexParameteri(target, gl::TEXTURE_MIN_FILTER, gl::NEAREST as i32);
-			gl::TexParameteri(target, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
-			gl::TexParameteri(target, gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as i32);
-			gl::TexParameteri(target, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as i32);
-		}
-		id
+	unsafe {
+	    gl::GenTextures(1, &mut id);
+	    gl::BindTexture(target, id);
+	    gl::TexParameteri(target, gl::TEXTURE_MIN_FILTER, TTex::TEXTURE_MIN_FILTER as i32);
+	    gl::TexParameteri(target, gl::TEXTURE_MAG_FILTER, TTex::TEXTURE_MAG_FILTER as i32);
+	    gl::TexParameteri(target, gl::TEXTURE_WRAP_S, TTex::TEXTURE_WRAP_S as i32);
+	    gl::TexParameteri(target, gl::TEXTURE_WRAP_T, TTex::TEXTURE_WRAP_T as i32);
 	}
+	id
+    }
 }
 
 fn normalized_to_u8_color(r: f32, g: f32, b: f32) -> Color {
