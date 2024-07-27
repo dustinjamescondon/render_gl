@@ -212,12 +212,12 @@ where
         self.attach_point = attach_point;
     }
 
-    pub fn attach_to_unit(&mut self, tex_unit: gl::types::GLuint) {
+    pub fn attach_to_unit(&self, tex_unit: gl::types::GLuint) {
         unsafe {
             gl::ActiveTexture(gl::TEXTURE0 + tex_unit);
             gl::BindTexture(TTex::TARGET, self.id);
         }
-        self.attach_point = gl::TEXTURE0 + tex_unit;
+        //self.attach_point = gl::TEXTURE0 + tex_unit;
     }
 
     /// TODO impl some mech for this to be cusomized per texture, because
