@@ -29,8 +29,9 @@ where
     _hack: std::marker::PhantomData<(TTex,TData)>,
 }
 
-pub type RGBTexture = Texture<TextureTypeRGB, [f32;3]>;
+pub type RGBTexture = Texture<TextureTypeRGB, [f32;3]>; 
 pub type U8RGBTexture = Texture<TextureTypeU8RGB, [u8;3]>;
+pub type U8RGBATexture = Texture<TextureTypeU8RGBA, [u8;4]>;
 pub type F32Texture = Texture<TextureTypeRGB, f32>;
 pub type I32Texture = Texture<TextureTypeI32, i32>;
 pub type REDTexture = Texture<TextureTypeRed, u8>;
@@ -49,8 +50,20 @@ impl TextureType<[f32;3]> for TextureTypeRGB {
 
 pub struct TextureTypeU8RGB;
 impl TextureType<[u8;3]> for TextureTypeU8RGB {
-    const INTERNAL_FORMAT: gl::types::GLuint = gl::RGB;
-    const TEXTURE_TYPE: gl::types::GLuint = gl::RGB;
+    const INTERNAL_FORMAT: gl::types::GLuint = gl::RGBA;
+    const TEXTURE_TYPE: gl::types::GLuint = gl::RGBA;
+    const DATA_TYPE: gl::types::GLenum = gl::UNSIGNED_BYTE;
+    const TARGET: gl::types::GLenum = gl::TEXTURE_2D;
+    const TEXTURE_WRAP_S: gl::types::GLenum = gl::REPEAT;
+    const TEXTURE_WRAP_T: gl::types::GLenum = gl::REPEAT;
+    const TEXTURE_MIN_FILTER: gl::types::GLenum = gl::LINEAR_MIPMAP_LINEAR;
+    const TEXTURE_MAG_FILTER: gl::types::GLenum = gl::LINEAR;
+}
+
+pub struct TextureTypeU8RGBA;
+impl TextureType<[u8;4]> for TextureTypeU8RGBA {
+    const INTERNAL_FORMAT: gl::types::GLuint = gl::RGBA;
+    const TEXTURE_TYPE: gl::types::GLuint = gl::RGBA;
     const DATA_TYPE: gl::types::GLenum = gl::UNSIGNED_BYTE;
     const TARGET: gl::types::GLenum = gl::TEXTURE_2D;
     const TEXTURE_WRAP_S: gl::types::GLenum = gl::REPEAT;
