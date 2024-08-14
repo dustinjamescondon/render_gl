@@ -41,7 +41,10 @@ impl TextureType<[f32;3]> for TextureTypeRGB {
     const INTERNAL_FORMAT: gl::types::GLuint = gl::RGB4;
     const TEXTURE_TYPE: gl::types::GLuint = gl::RGB;
     const DATA_TYPE: gl::types::GLenum = gl::FLOAT;
-    const TARGET: gl::types::GLenum = gl::TEXTURE_2D;
+    /// Is texture rectangle just b/c the only place I used this was 
+    /// in a shader for the mandelbrot fractal, where I want to access
+    /// things by pixel instead of normalized coorindates
+    const TARGET: gl::types::GLenum = gl::TEXTURE_RECTANGLE;
     const TEXTURE_WRAP_S: gl::types::GLenum = gl::CLAMP_TO_EDGE;
     const TEXTURE_WRAP_T: gl::types::GLenum = gl::CLAMP_TO_EDGE;
     const TEXTURE_MIN_FILTER: gl::types::GLenum = gl::LINEAR;
