@@ -1,7 +1,8 @@
 use crate::glchk;
 use gl;
-use sdl2::pixels::Color;
 use std::os::raw::c_void;
+
+use super::{ColorF32, ColorU8};
 
 // Refer https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
 // and https://moderngl.readthedocs.io/en/latest/topics/texture_formats.html
@@ -252,11 +253,6 @@ where
 	}
 	id
     }
-}
-
-fn normalized_to_u8_color(r: f32, g: f32, b: f32) -> Color {
-    let max_u8 = u8::MAX as f32;
-    Color::RGB((r * max_u8) as u8, (g * max_u8) as u8, (b * max_u8) as u8)
 }
 
 impl<TTex,TData> Drop for Texture<TTex,TData>

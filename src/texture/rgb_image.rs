@@ -1,5 +1,6 @@
 use image::{RgbImage, ImageBuffer};
-use sdl2::pixels::Color;
+
+use super::{ColorF32, ColorU8};
 
 /// Similiar to RGBTexture, but it's independent of opengl, so it can easily 
 /// be used on a seperate thread
@@ -7,12 +8,12 @@ pub struct RGBImage
 {
     pub width: usize,
     pub height: usize,
-    pub data: Vec<Color>
+    pub data: Vec<ColorU8>
 }
 
 impl RGBImage
 {
-    pub fn new(data: Vec<Color>, width: usize, height: usize) -> RGBImage {
+    pub fn new(data: Vec<ColorU8>, width: usize, height: usize) -> RGBImage {
         RGBImage {
             width,
             height,
@@ -23,7 +24,7 @@ impl RGBImage
 
 impl RGBImage {
 
-    pub fn rows(&self) -> impl DoubleEndedIterator<Item = &[Color]> {
+    pub fn rows(&self) -> impl DoubleEndedIterator<Item = &[ColorU8]> {
         self.data.chunks(self.width)
     }
     /// TODO Need to get rid of arbitrary methods like this and 
