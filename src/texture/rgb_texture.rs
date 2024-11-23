@@ -2,7 +2,6 @@ use crate::glchk;
 use gl;
 use std::os::raw::c_void;
 
-use super::{ColorF32, ColorU8};
 
 // Refer https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
 // and https://moderngl.readthedocs.io/en/latest/topics/texture_formats.html

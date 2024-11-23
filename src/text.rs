@@ -175,15 +175,9 @@ impl FontContext {
             }
             
             self.text_vao.unbind();
-            unsafe {
-                gl::BindTexture(gl::TEXTURE_2D, 0);
-            }
+            gl::BindTexture(gl::TEXTURE_2D, 0);
+            
             gl_panic!();
         }
     }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
 }
