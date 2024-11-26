@@ -13,7 +13,17 @@ pub struct RGBImage
 
 impl RGBImage
 {
-    pub fn new(data: Vec<ColorU8>, width: usize, height: usize) -> RGBImage {
+    pub fn new_u8(data: Vec<ColorU8>, width: usize, height: usize) -> RGBImage {
+        RGBImage {
+            width,
+            height,
+            data,
+        }
+    }
+
+    pub fn new_f32(data_f32: Vec<ColorF32>, width: usize, height: usize) -> RGBImage {
+        let data = data_f32.iter().map(|x| x.into_u8()).collect();
+
         RGBImage {
             width,
             height,

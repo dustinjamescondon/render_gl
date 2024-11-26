@@ -23,6 +23,27 @@ impl SerializedRGB<f32> {
             b: blue,
         }
     }
+
+    pub fn into_u8(&self) -> ColorU8 {
+        ColorU8::from_f32(self.r, self.g, self.b)
+    }
+}
+
+impl SerializedRGB<u8> {
+    pub fn from_f32(r: f32, g: f32, b: f32) -> Self {
+        let red = (r / (u8::MAX as f32))as u8;
+        let green = (g / (u8::MAX as f32)) as u8;
+        let blue = (b / (u8::MAX as f32)) as u8;
+        Self {
+            r: red,
+            g: green,
+            b: blue,
+        }
+    }
+
+    pub fn into_f32(&self) -> ColorF32 {
+        ColorF32::from_u8(self.r, self.g, self.b)
+    }
 }
 
 impl<T> SerializedRGB<T> {
