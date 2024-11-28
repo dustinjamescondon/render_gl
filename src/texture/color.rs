@@ -2,7 +2,7 @@
 /// A struct that for holding RGB values that has these fields contiguously in memory and in the
 /// that explicit order. This is so that a pointer to it can be passed to opengl
 #[repr(C)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct SerializedRGB<T> {
     pub r: T,
     pub g: T,
