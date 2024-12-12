@@ -3,6 +3,8 @@ pub mod framebuffer;
 mod shader;
 pub mod text;
 pub mod texture;
+pub mod camera;
+
 pub use buffer::{ArrayBuffer, ElementArrayBuffer, VertexArray};
 pub use framebuffer::*;
 pub use shader::{Program, Shader};
