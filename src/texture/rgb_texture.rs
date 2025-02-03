@@ -114,7 +114,7 @@ impl TextureType<f32> for TextureTypeF32 {
 impl Clone for RGBTexture {
     fn clone(&self) -> Self {
         RGBTexture::new_from_data(
-            self.get_pixel_data().as_mut_ptr() as *mut gl::types::GLvoid,
+            self.get_pixel_data().as_slice(),
             self.width as usize,
             self.height as usize,
         )
@@ -162,7 +162,42 @@ where
     /// TODO maybe having a void pointer be necessary for this interface is a bad idea...
     /// that is, maybe we can make specific functions for passing in color data or u32 data
     /// instead of void*
-    pub fn new_from_data(data: *const std::ffi::c_void, width: usize, height: usize) -> Self {
+    pub fn new_from_data(data: &[TData], width: usize, height: usize) -> Self {
+        let target = TTex::TARGET;
+
+        let id = Self::create_and_set_gl_parameters();
+        unsafe {
+            gl::TexImage2D(
+                target,
+                0,
+                TTex::INTERNAL_FORMAT as i32,
+                width as i32,
+                height as i32,
+                0,
+                TTex::TEXTURE_TYPE,
+                TTex::DATA_TYPE,
+                data.as_ptr() as *const c_void,
+            );
+
+            gl::GenerateMipmap(gl::TEXTURE_2D);
+        }
+
+        Texture {
+            id,
+            width: width as i32,
+            height: height as i32,
+            target,
+            attach_point: 0,
+            _hack: std::marker::PhantomData,
+        }
+    }
+    /// This allocates a texture on the video card of the given size
+    /// containing the data.
+    ///
+    /// TODO maybe having a void pointer be necessary for this interface is a bad idea...
+    /// that is, maybe we can make specific functions for passing in color data or u32 data
+    /// instead of void*
+    pub fn new_from_ptr(data: *const TData, width: usize, height: usize) -> Self {
         let target = TTex::TARGET;
 
         let id = Self::create_and_set_gl_parameters();

@@ -55,3 +55,19 @@ impl<T> SerializedRGB<T> {
         }
     }
 }
+
+impl<T> From<&[T;3]> for SerializedRGB<T> where T:Copy {
+    fn from(value: &[T;3]) -> Self {
+        Self {
+            r: value[0],
+            g: value[1],
+            b: value[2],
+        }
+    }
+}
+
+impl<T> Into<[T;3]> for SerializedRGB<T>  {
+    fn into(self) -> [T;3] {
+        [self.r, self.g, self.b]
+    }
+}

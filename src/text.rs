@@ -38,7 +38,7 @@ impl FontContext {
             let glyph = face.glyph();
 
             let texture = REDTexture::new_from_data(
-                glyph.bitmap().raw().buffer as *mut gl::types::GLvoid,
+                glyph.bitmap().buffer(),
                 glyph.bitmap().width() as usize,
                 glyph.bitmap().rows() as usize,
             );
