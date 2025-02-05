@@ -1,6 +1,6 @@
 use image::{RgbImage, ImageBuffer};
 
-use super::{ColorF32, ColorU8};
+use super::{ColorF32, ColorU8, RGBTexture};
 
 /// Similiar to RGBTexture, but it's independent of opengl, so it can easily 
 /// be used on a seperate thread
@@ -29,6 +29,11 @@ impl RGBImage
             height,
             data,
         }
+    }
+
+    pub fn to_rgb_texture(&self) -> RGBTexture {
+        let data_f32: Vec<[f32;3]> = self.data.iter().map(|clr| clr.into_f32().into()).collect();
+        RGBTexture::new_from_data(data_f32.as_slice(), self.width, self.height)
     }
 }
 
