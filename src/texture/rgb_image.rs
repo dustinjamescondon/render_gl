@@ -4,6 +4,7 @@ use super::{ColorF32, ColorU8, RGBTexture};
 
 /// Similiar to RGBTexture, but it's independent of opengl, so it can easily 
 /// be used on a seperate thread
+#[derive(Clone)]
 pub struct RGBImage
 {
     pub width: usize,
