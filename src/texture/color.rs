@@ -13,6 +13,12 @@ pub type ColorF32 = SerializedRGB<f32>;
 pub type ColorU8 = SerializedRGB<u8>;
 
 impl SerializedRGB<f32> {
+    pub const BLACK: SerializedRGB<f32> = SerializedRGB::<f32> {
+        r: 0.0,
+        g: 0.0,
+        b: 0.0,
+    };
+
     pub fn from_u8(r: u8, g: u8, b: u8) -> Self {
         let red = (r as f32) / (u8::MAX as f32);
         let green = (g as f32) / (u8::MAX as f32);
