@@ -29,6 +29,7 @@ where
     _hack: std::marker::PhantomData<(TTex,TData)>,
 }
 
+pub type RGBTextureRect = Texture<TextureTypeRGBRect, [f32;3]>; 
 pub type RGBTexture = Texture<TextureTypeRGB, [f32;3]>; 
 pub type U8RGBTexture = Texture<TextureTypeU8RGB, [u8;3]>;
 pub type U8RGBATexture = Texture<TextureTypeU8RGBA, [u8;4]>;
@@ -36,8 +37,8 @@ pub type F32Texture = Texture<TextureTypeRGB, f32>;
 pub type I32Texture = Texture<TextureTypeI32, i32>;
 pub type REDTexture = Texture<TextureTypeRed, u8>;
 
-pub struct TextureTypeRGB;
-impl TextureType<[f32;3]> for TextureTypeRGB {
+pub struct TextureTypeRGBRect;
+impl TextureType<[f32;3]> for TextureTypeRGBRect {
     const INTERNAL_FORMAT: gl::types::GLuint = gl::RGB4;
     const TEXTURE_TYPE: gl::types::GLuint = gl::RGB;
     const DATA_TYPE: gl::types::GLenum = gl::FLOAT;
@@ -45,6 +46,18 @@ impl TextureType<[f32;3]> for TextureTypeRGB {
     /// in a shader for the mandelbrot fractal, where I want to access
     /// things by pixel instead of normalized coorindates
     const TARGET: gl::types::GLenum = gl::TEXTURE_RECTANGLE;
+    const TEXTURE_WRAP_S: gl::types::GLenum = gl::CLAMP_TO_EDGE;
+    const TEXTURE_WRAP_T: gl::types::GLenum = gl::CLAMP_TO_EDGE;
+    const TEXTURE_MIN_FILTER: gl::types::GLenum = gl::LINEAR;
+    const TEXTURE_MAG_FILTER: gl::types::GLenum = gl::LINEAR;
+}
+
+pub struct TextureTypeRGB;
+impl TextureType<[f32;3]> for TextureTypeRGB {
+    const INTERNAL_FORMAT: gl::types::GLuint = gl::RGB4;
+    const TEXTURE_TYPE: gl::types::GLuint = gl::RGB;
+    const DATA_TYPE: gl::types::GLenum = gl::FLOAT;
+    const TARGET: gl::types::GLenum = gl::TEXTURE_2D;
     const TEXTURE_WRAP_S: gl::types::GLenum = gl::CLAMP_TO_EDGE;
     const TEXTURE_WRAP_T: gl::types::GLenum = gl::CLAMP_TO_EDGE;
     const TEXTURE_MIN_FILTER: gl::types::GLenum = gl::LINEAR;
