@@ -113,7 +113,7 @@ impl FontContext {
         self.render_text(text, corner_pos, scale, projection, clr)
     }
 
-    pub fn render_text(&self, text: &String, pos: Vec2, scale: f32, projection: &Mat4, clr: &[f32; 3]) {
+    pub fn render_text(&self, text: &str, pos: Vec2, scale: f32, projection: &Mat4, clr: &[f32; 3]) {
         self.text_shader.set_used();
         self.text_shader
             .set_3float("textColor".to_string(), clr.clone());
