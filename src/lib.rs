@@ -4,11 +4,13 @@ mod shader;
 pub mod text;
 pub mod texture;
 pub mod camera;
+mod rectangle;
 
 pub use buffer::{ArrayBuffer, ElementArrayBuffer, VertexArray};
 pub use framebuffer::*;
 pub use shader::{Program, Shader};
 pub use texture::*;
+pub use rectangle::Rect;
 
 #[macro_export]
 macro_rules! gl_panic {

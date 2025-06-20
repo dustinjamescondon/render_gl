@@ -3,7 +3,7 @@ use nalgebra::Vector2;
 use nalgebra_glm::{Vec2, Mat4};
 use std::collections::HashMap;
 type Vector2i = Vector2<i32>;
-use crate::{gl_panic, ArrayBuffer, Program, REDTexture, VertexArray};
+use crate::{gl_panic, rectangle::Rect, ArrayBuffer, Program, REDTexture, VertexArray};
 use freetype as ft;
 
 pub struct FontContext {
@@ -95,7 +95,7 @@ impl FontContext {
         })
     }
 
-    fn text_width(&self, text: &String, scale: f32) -> f32 {
+    pub fn text_width(&self, text: &str, scale: f32) -> f32 {
         let mut width = 0_f32;
         for c in text.chars() {
             let ctex = self.map.get(&c).unwrap();
@@ -105,15 +105,39 @@ impl FontContext {
         width
     }
 
-    pub fn render_text_center_justified(&self, text: &String, center_pos: Vec2, scale: f32, projection: &Mat4, clr: &[f32; 3]) {
-        let text_width = self.text_width(text, scale);
+    pub fn text_height(&self, text: &str, scale: f32) -> f32 {
+        let mut max_height = 0_f32;
+        for c in text.chars() {
+            let ctex = self.map.get(&c).unwrap();
+            max_height = max_height.max(ctex.size.y as f32) * scale;
+        }
+
+        max_height
+    }
+
+    pub fn render_text_center_justified(
+        &self,
+        text: &String, 
+        center_pos: Vec2, 
+        scale: f32, 
+        projection: &Mat4, 
+        clr: &[f32; 3]) 
+        -> Rect {
+        let text_width = self.text_width(text.as_str(), scale);
 
         let mut corner_pos = center_pos;
         corner_pos.x -= 0.5_f32 * text_width;
         self.render_text(text, corner_pos, scale, projection, clr)
     }
 
-    pub fn render_text(&self, text: &str, pos: Vec2, scale: f32, projection: &Mat4, clr: &[f32; 3]) {
+    pub fn render_text(
+        &self, 
+        text: &str, 
+        pos: Vec2, 
+        scale: f32, 
+        projection: &Mat4, 
+        clr: &[f32; 3])
+        -> Rect {
         self.text_shader.set_used();
         self.text_shader
             .set_3float("textColor".to_string(), clr.clone());
@@ -178,6 +202,10 @@ impl FontContext {
             gl::BindTexture(gl::TEXTURE_2D, 0);
             
             gl_panic!();
+            Rect::new(
+                pos.into(),
+                self.text_width(text, scale),
+                self.text_height(text, scale))
         }
     }
 }
