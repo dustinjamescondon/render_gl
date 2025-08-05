@@ -1,6 +1,6 @@
 extern crate rusttype;
 use nalgebra::Vector2;
-use nalgebra_glm::{Vec2, Mat4};
+use nalgebra_glm::{pi, Mat4, Vec2};
 use std::collections::HashMap;
 type Vector2i = Vector2<i32>;
 use crate::{gl_panic, rectangle::Rect, ArrayBuffer, Program, REDTexture, VertexArray};
@@ -22,9 +22,19 @@ struct Character {
 }
 
 impl FontContext {
-    pub fn new(font: &str, pixel_height: u32) -> Result<FontContext, ()> {
+
+    pub fn new_from_path(path: &str, pixel_height: u32) -> Result<FontContext, ()> {
         let lib = ft::Library::init().unwrap();
-        let face = lib.new_face(font, 0).unwrap();
+        Self::new(lib.new_face(path, 0).unwrap(), pixel_height)
+    }
+
+    pub fn new_from_buffer(buffer: &[u8], pixel_height: u32) -> Result<FontContext, ()> {
+        let lib = ft::Library::init().unwrap();
+        Self::new(lib.new_memory_face(buffer.to_vec(), 0).unwrap(), pixel_height)
+    }
+
+    fn new(face: freetype::Face, pixel_height: u32) -> Result<FontContext, ()> {
+
         face.set_pixel_sizes(0, pixel_height).unwrap();
 
         unsafe {
