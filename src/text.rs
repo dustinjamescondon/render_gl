@@ -131,7 +131,7 @@ impl FontContext {
         center_pos: Vec2, 
         scale: f32, 
         projection: &Mat4, 
-        clr: &[f32; 3]) 
+        clr: &[f32; 4]) 
         -> Rect {
         let text_width = self.text_width(text.as_str(), scale);
 
@@ -146,11 +146,11 @@ impl FontContext {
         pos: Vec2, 
         scale: f32, 
         projection: &Mat4, 
-        clr: &[f32; 3])
+        clr: &[f32; 4])
         -> Rect {
         self.text_shader.set_used();
         self.text_shader
-            .set_3float("textColor".to_string(), clr.clone());
+            .set_4float("textColor".to_string(), clr.clone());
 
         self.text_shader
             .set_uniform_glm_m4("projection".to_string(), &projection);    
