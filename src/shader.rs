@@ -135,6 +135,13 @@ impl Program {
         }
     }
 
+    pub fn set_4float(&self, name: String, value: [f32;4]) {
+        unsafe {
+            let location = self.get_uniform_location(name);
+            gl::Uniform4f(location, value[0], value[1], value[2], value[3]);
+        }
+    }
+
     pub fn set_double(&self, name: String, value: f64) {
         unsafe {
             let location = self.get_uniform_location(name);
