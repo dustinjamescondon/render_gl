@@ -3,7 +3,7 @@ use nalgebra::Vector2;
 use nalgebra_glm::{Mat4, Vec2};
 use std::collections::HashMap;
 type Vector2i = Vector2<i32>;
-use crate::{gl_panic, rectangle::Rect, ArrayBuffer, Program, REDTexture, VertexArray};
+use crate::{camera::{Point2f, Vector2f}, gl_panic, rectangle::Rect, ArrayBuffer, Program, REDTexture, VertexArray};
 use freetype as ft;
 
 pub struct FontContext {
@@ -128,7 +128,7 @@ impl FontContext {
     pub fn render_text_center_justified(
         &self,
         text: &String, 
-        center_pos: Vec2, 
+        center_pos: Point2f, 
         scale: f32, 
         projection: &Mat4, 
         clr: &[f32; 4]) 
@@ -143,7 +143,7 @@ impl FontContext {
     pub fn render_text_with_newlines(
         &self, 
         text: &str, 
-        pos: Vec2, 
+        pos: Point2f, 
         scale: f32, 
         spacing: f32,
         projection: &Mat4, 
@@ -154,7 +154,7 @@ impl FontContext {
         for (i, line) in text.split('\n').enumerate() {
             let text_rect = self.render_text(
                 line, 
-                pos - (i as f32 * height + spacing) * Vec2::y(),
+                pos - ((i as f32 * height + spacing) * Vector2f::y()),
                 scale,
                 projection, clr);
             unioned_rect.union(&text_rect);
@@ -165,7 +165,7 @@ impl FontContext {
     pub fn render_text(
         &self, 
         text: &str, 
-        pos: Vec2, 
+        pos: Point2f, 
         scale: f32, 
         projection: &Mat4, 
         clr: &[f32; 4])
