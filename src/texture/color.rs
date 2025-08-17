@@ -7,6 +7,7 @@ pub struct SerializedRGB<T> {
     pub r: T,
     pub g: T,
     pub b: T,
+    pub a: T,
 }
 
 pub type ColorF32 = SerializedRGB<f32>;
@@ -17,16 +18,19 @@ impl SerializedRGB<f32> {
         r: 0.0,
         g: 0.0,
         b: 0.0,
+        a: 1.0,
     };
 
     pub fn from_u8(r: u8, g: u8, b: u8) -> Self {
         let red = (r as f32) / (u8::MAX as f32);
         let green = (g as f32) / (u8::MAX as f32);
         let blue = (b as f32) / (u8::MAX as f32);
+        let alpha = 1.0;
         Self {
             r: red,
             g: green,
             b: blue,
+            a: alpha
         }
     }
 
@@ -40,10 +44,12 @@ impl SerializedRGB<u8> {
         let red = (r * (u8::MAX as f32))as u8;
         let green = (g * (u8::MAX as f32)) as u8;
         let blue = (b * (u8::MAX as f32)) as u8;
+        let alpha = u8::MAX;
         Self {
             r: red,
             g: green,
             b: blue,
+            a: alpha
         }
     }
 
@@ -53,21 +59,23 @@ impl SerializedRGB<u8> {
 }
 
 impl<T> SerializedRGB<T> {
-    pub fn new(r: T, g: T, b: T) -> Self {
+    pub fn new(r: T, g: T, b: T, a: T) -> Self {
         Self {
             r,
             g,
             b,
+            a
         }
     }
 }
 
-impl<T> From<&[T;3]> for SerializedRGB<T> where T:Copy {
-    fn from(value: &[T;3]) -> Self {
+impl<T> From<&[T;4]> for SerializedRGB<T> where T:Copy {
+    fn from(value: &[T;4]) -> Self {
         Self {
             r: value[0],
             g: value[1],
             b: value[2],
+            a: value[3]
         }
     }
 }
@@ -75,5 +83,11 @@ impl<T> From<&[T;3]> for SerializedRGB<T> where T:Copy {
 impl<T> Into<[T;3]> for SerializedRGB<T>  {
     fn into(self) -> [T;3] {
         [self.r, self.g, self.b]
+    }
+}
+
+impl<T> Into<[T;4]> for SerializedRGB<T>  {
+    fn into(self) -> [T;4] {
+        [self.r, self.g, self.b, self.a]
     }
 }
