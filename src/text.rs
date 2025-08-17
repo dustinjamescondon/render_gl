@@ -1,6 +1,6 @@
 extern crate rusttype;
 use nalgebra::Vector2;
-use nalgebra_glm::{pi, Mat4, Vec2};
+use nalgebra_glm::{Mat4, Vec2};
 use std::collections::HashMap;
 type Vector2i = Vector2<i32>;
 use crate::{gl_panic, rectangle::Rect, ArrayBuffer, Program, REDTexture, VertexArray};
@@ -138,6 +138,28 @@ impl FontContext {
         let mut corner_pos = center_pos;
         corner_pos.x -= 0.5_f32 * text_width;
         self.render_text(text, corner_pos, scale, projection, clr)
+    }
+
+    pub fn render_text_with_newlines(
+        &self, 
+        text: &str, 
+        pos: Vec2, 
+        scale: f32, 
+        spacing: f32,
+        projection: &Mat4, 
+        clr: &[f32; 4]
+    ) -> Rect{
+        let height = self.text_height(text, scale);
+        let unioned_rect = Rect::unset();
+        for (i, line) in text.split('\n').enumerate() {
+            let text_rect = self.render_text(
+                line, 
+                pos - (i as f32 * height + spacing) * Vec2::y(),
+                scale,
+                projection, clr);
+            unioned_rect.union(&text_rect);
+        }
+        unioned_rect
     }
 
     pub fn render_text(
