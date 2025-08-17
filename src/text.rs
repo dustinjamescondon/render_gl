@@ -21,6 +21,13 @@ struct Character {
     pub advance: u32,
 }
 
+#[derive(Clone,Copy)]
+pub enum Justification {
+    Left,
+    Right,
+    Center,
+}
+
 impl FontContext {
 
     pub fn new_from_path(path: &str, pixel_height: u32) -> Result<FontContext, ()> {
@@ -137,10 +144,55 @@ impl FontContext {
 
         let mut corner_pos = center_pos;
         corner_pos.x -= 0.5_f32 * text_width;
-        self.render_text(text, corner_pos, scale, projection, clr)
+        self.render_text_raw(text, corner_pos, scale, projection, clr)
     }
 
-    pub fn render_text_with_newlines(
+    pub fn render_text_right_justified(
+        &self,
+        text: &String, 
+        center_pos: Point2f, 
+        scale: f32, 
+        projection: &Mat4, 
+        clr: &[f32; 4]) 
+        -> Rect {
+        let text_width = self.text_width(text.as_str(), scale);
+
+        let mut corner_pos = center_pos;
+        corner_pos.x -= text_width;
+        self.render_text_raw(text, corner_pos, scale, projection, clr)
+    }
+
+    pub fn render_text(
+        &self, 
+        text            : &str, 
+        pos             : Point2f,
+        justification   : Justification,
+        scale           : f32, 
+        spacing         : f32,
+        projection      : &Mat4, 
+        clr             : &[f32; 4]
+    ) -> Rect{
+        let height = self.text_height(text, scale);
+        let unioned_rect = Rect::unset();
+        for (i, line) in text.split('\n').enumerate() {
+
+            let start_pos = match justification {
+                Justification::Left => pos,
+                Justification::Right => pos - Vector2f::x().scale( self.text_width(text, scale).into()),
+                Justification::Center => pos - Vector2f::x().scale((0.5 *self.text_width(text, scale)).into())
+            };
+
+            let text_rect = self.render_text_raw(
+                line, 
+                start_pos - ((i as f32 * height + spacing) * Vector2f::y()),
+                scale,
+                projection, clr);
+            unioned_rect.union(&text_rect);
+        }
+        unioned_rect
+    }
+
+    pub fn render_text_left_justified(
         &self, 
         text: &str, 
         pos: Point2f, 
@@ -149,20 +201,18 @@ impl FontContext {
         projection: &Mat4, 
         clr: &[f32; 4]
     ) -> Rect{
-        let height = self.text_height(text, scale);
-        let unioned_rect = Rect::unset();
-        for (i, line) in text.split('\n').enumerate() {
-            let text_rect = self.render_text(
-                line, 
-                pos - ((i as f32 * height + spacing) * Vector2f::y()),
-                scale,
-                projection, clr);
-            unioned_rect.union(&text_rect);
-        }
-        unioned_rect
+        self.render_text(text,
+        pos,
+        Justification::Left,
+        scale,
+        spacing,
+        projection,
+        clr)
     }
 
-    pub fn render_text(
+
+    /// Renders text without dealing with newlines
+    fn render_text_raw(
         &self, 
         text: &str, 
         pos: Point2f, 
